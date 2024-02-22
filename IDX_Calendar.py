@@ -7,7 +7,7 @@ class IDX_Calendar :
                 end_date:str   = "9999"
                ):
     '''
-    Parameter :
+    Property :
       full : ['yyyymmdd', ...]
       months : ['yyyymm', ...]
       years : ['yyyy', ...]
