@@ -1,10 +1,15 @@
 import pandas as pd
+import os
 
 class IDX_Calendar :
-  raw_pxdb = 'https://raw.githubusercontent.com/px-db/stock_summary_idx/main/'
+  raw_pxdb     = 'https://raw.githubusercontent.com/px-db/'
+  repo         = 'stock_summary_idx/main/'
+  local_dir    = '../stock_summary_idx/'
+  file_cal_csv = 'kalender_market_idx.csv'
   def __init__( self,
                 start_date:str = "2019",
-                end_date:str   = "9999"
+                end_date:str   = "9999",
+                file_csv:str   = raw_pxdb+repo+file_cal_csv
                ):
     '''
     Property :
@@ -17,7 +22,7 @@ class IDX_Calendar :
       count_no = {'yyyymmdd':1, 'yyyymmdd':2, ...}
     '''
 
-    self.full = [str(d) for d in pd.read_csv(self.raw_pxdb+"kalender%20market%20idx.csv")['kalender'].tolist()]
+    self.full = [str(d) for d in pd.read_csv(file_csv)['kalender'].tolist()]
     self.months = []
     self.years = []
     self.annually = {}
@@ -57,3 +62,18 @@ class IDX_Calendar :
       self.count_no[i] = count
       count += 1
       prev_month = i[4:6]
+  
+  def scan_calendar(self, dir:str=local_dir):
+    self.scanned_file = {
+                'kalender':[],
+                'jumlah emiten':[], 
+               }
+    for y in os.listdir(os.path.join(dir,'full_col')):
+      for f in os.listdir(os.path.join(dir,'full_col',y)):
+        self.scanned_file['kalender'].append(str(f[14:22]))
+        self.scanned_file['jumlah emiten'].append(len(pd.read_csv(os.path.join(dir,'full_col',y,f))))
+    
+  def save_scan_calendar(self,
+                         save_to:str=local_dir,
+                         ):
+    pd.DataFrame(self.scanned_file).to_csv(os.path.join(save_to,self.file_cal_csv), index=False)

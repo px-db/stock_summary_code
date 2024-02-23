@@ -1,3 +1,10 @@
+# AZ
+tmp/
+test.py
+test.ipynb
+contoh kalender.csv
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
