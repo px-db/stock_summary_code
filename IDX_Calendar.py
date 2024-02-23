@@ -70,10 +70,13 @@ class IDX_Calendar :
                }
     for y in os.listdir(os.path.join(dir,'full_col')):
       for f in os.listdir(os.path.join(dir,'full_col',y)):
-        self.scanned_file['kalender'].append(str(f[14:22]))
+        self.scanned_file['kalender'].append(int(f[14:22]))
         self.scanned_file['jumlah emiten'].append(len(pd.read_csv(os.path.join(dir,'full_col',y,f))))
+    self.df_calendar = pd.DataFrame(self.scanned_file).sort_values('kalender')
+    return self
     
   def save_scan_calendar(self,
                          save_to:str=local_dir,
                          ):
-    pd.DataFrame(self.scanned_file).to_csv(os.path.join(save_to,self.file_cal_csv), index=False)
+    self.df_calendar.to_csv(os.path.join(save_to,self.file_cal_csv), index=False)
+    return self

@@ -3,6 +3,9 @@ tmp/
 test.py
 test.ipynb
 contoh kalender.csv
+download/*
+!download/*.ipynb
+!download/*.py
 
 
 # Byte-compiled / optimized / DLL files
