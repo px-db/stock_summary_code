@@ -1,7 +1,6 @@
 # AZ
 tmp/
-test.py
-test.ipynb
+test*
 contoh kalender.csv
 download/*
 !download/*.ipynb
