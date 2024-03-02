@@ -1,8 +1,9 @@
 import pandas as pd
 import os
+from Common import raw_pxdb
 
 class IDX_Calendar :
-  raw_pxdb     = 'https://raw.githubusercontent.com/px-db/'
+  raw_pxdb     = raw_pxdb
   repo         = 'stock_summary_idx/main/'
   local_dir    = '../stock_summary_idx/'
   file_cal_csv = 'kalender_market_idx.csv'
@@ -28,6 +29,7 @@ class IDX_Calendar :
     self.annually = {}
     self.monthly ={}
     self.count_no = {}
+    self.filter = []
 
     for i in self.full :
       if i[:4] not in self.years :
