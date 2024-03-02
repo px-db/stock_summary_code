@@ -7,6 +7,15 @@ class Summary :
   '''
   Class Summary adalah kumpulan dataframe yang sudah di kelompokan berdasarkan
   harian, bulanan dan tahunan.
+  Property :
+    date     : IDX_Calendar
+    dfs_days : {'yyyymmdd':df}
+    monthly  : {'yyyymm':df,...}
+    annually : {'yyyy':df,...}
+    monthly_summary  : {'yyyymm': df,...}
+    annually_summary : {'yyyy': df,...}
+    year_to_month : {'yyyymm':df}
+    summary : {'yyyymm':df...,'yyyy':df}
   '''
   def __init__(self,calendar:IDX_Calendar):
     #self.cols = sl().result
@@ -15,6 +24,7 @@ class Summary :
     self.monthly = {}
     self.annually = {}
     self.set_periode_df()
+    self.summary = {}
   
   def list_dfs(self,cal:str='filter')->dict[str, pd.DataFrame]:
     dict_df = {}
@@ -49,15 +59,21 @@ class Summary :
     return pd.concat(list_dfs,
                      ignore_index=False
                      )
+  
+  def summary_dict_to_csv(self):
+    for k, v in self.summary.items():
+      pd.DataFrame(v).to_csv(f'../stock_summary_idx/summary/summary_{k}.csv')
+      print(f'../stock_summary_idx/summary/summary_{k}.csv sudah disimpan')
+    return self
 
-  def set_df_summary_dict(self,dfpy:dict): # dfpy hasil concat_df()
+  def set_summary_dict(self):
     '''
     parameter :
   
     return :
       dict
     '''
-    summary = {}
+    self.summary = {}
     list_summary = []
     chg = 0.0
     chg_ytm = 0.0
@@ -69,41 +85,45 @@ class Summary :
     sector = ''
     count_code = {}
     first_prev = {}
+    month = ''
     # Key bisa tahun atau bulan
-    for key, df_py in dfpy.items():
-      count_code = pd.Series(df_py.index.tolist()).value_counts()
-      for code in df_py.index.unique().tolist() :
-        if not (code in df_py.index.tolist()) :
-          continue
-        if count_code[code] == 1:
-          continue
-        if not key_in_dict(code,first_prev) :
-          first_prev[code] = int(df_py.loc[code].iloc[0]['Prev'])
-
-        chg = round(((df_py.loc[code].iloc[-1]['Close']/df_py.loc[code].iloc[0]['Prev'])-1.0)*100,2)
-        chg_ytm = round(((df_py.loc[code].iloc[-1]['Close']/first_prev[code])-1.0)*100,2)
-        start_trading = df_py.loc[code].iloc[0]['Date']
-        end_trading = df_py.loc[code].iloc[-1]['Date']
-        tot_value = df_py.loc[code]['Value'].sum()
-        tot_vol = df_py.loc[code]['Volume'].sum()
-        tot_freq = df_py.loc[code]['Freq'].sum()
-        sector = str(df_py.loc[code].iloc[-1]['Remarks'])[14:18]
-
-        list_summary.append(
-            {'Stock Code'      : code,
-             'change %'        : chg,
-             'change YtM %'    : chg_ytm,
-             'Total Trading'   : count_code[code],
-             'Start Trading'   : str(start_trading),
-             'End Trading'     : str(end_trading),
-             'Total Value'     : tot_value,
-             'Total Volume'    : tot_vol,
-             'Total Frequency' : tot_freq,
-             'Sektor ID'       : sector,
-             'Year'            : str(key[:4]),
-             'Month'           : str(key[4:6])
-             }
-        )
-      summary[key] = list_summary
-      list_summary = []
-    return summary
+    for dfpy in [self.monthly, self. annually]:
+      for key, df_py in dfpy.items():
+        count_code = pd.Series(df_py.index.tolist()).value_counts()
+        for code in df_py.index.unique().tolist() :
+          if not (code in df_py.index.tolist()) :
+            continue
+          if count_code[code] == 1:
+            continue
+          if not key_in_dict(code,first_prev) :
+            first_prev[code] = int(df_py.loc[code].iloc[0]['Prev'])        
+          chg = round(((df_py.loc[code].iloc[-1]['Close']/df_py.loc[code].iloc[0]['Prev'])-1.0)*100,2)
+          chg_ytm = round(((df_py.loc[code].iloc[-1]['Close']/first_prev[code])-1.0)*100,2)
+          start_trading = df_py.loc[code].iloc[0]['Date']
+          end_trading = df_py.loc[code].iloc[-1]['Date']
+          tot_value = df_py.loc[code]['Value'].sum()
+          tot_vol = df_py.loc[code]['Volume'].sum()
+          tot_freq = df_py.loc[code]['Freq'].sum()
+          sector = str(df_py.loc[code].iloc[-1]['Remarks'])[14:18]
+          if len(key) == 4 :
+            month = 0
+          if len(key) == 6 :
+            month = str(key[4:6])
+          list_summary.append(
+              {'Stock Code'      : code,
+               'change %'        : chg,
+               'change YtM %'    : chg_ytm,
+               'Total Trading'   : count_code[code],
+               'Start Trading'   : str(start_trading),
+               'End Trading'     : str(end_trading),
+               'Total Value'     : tot_value,
+               'Total Volume'    : tot_vol,
+               'Total Frequency' : tot_freq,
+               'Sektor ID'       : sector,
+               'Year'            : str(key[:4]),
+               'Month'           : month
+               }
+          )
+        self.summary[key] = list_summary
+        list_summary = []
+    return self
