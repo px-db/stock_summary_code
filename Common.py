@@ -1,4 +1,5 @@
 import os
+from IDX_Calendar import IDX_Calendar
 raw_pxdb   = 'https://raw.githubusercontent.com/px-db/'
 full_col   = '../full_col/'
 short_col  = '../short_col/'
@@ -11,7 +12,7 @@ def islist(test):
   return True
 
 def is_idx_calendar(test):
-  if not isinstance(test, (list)) :
+  if not isinstance(test, (IDX_Calendar)) :
     print('attribut bukan IDX_Calendar')
     return False
   return True
