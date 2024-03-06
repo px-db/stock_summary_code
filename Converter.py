@@ -16,7 +16,7 @@ class Converter_SS :
       pd.read_excel(
         os.path.join(self.local_dir,file)).to_csv(
          os.path.join(self.save_to,
-                      f'{file[14:18]}',
+                      f'{file[14:18]}', # dir year
                       f'stock_summary_{file[14:22]}.csv'),
                      index=False)
       print(os.path.join(self.save_to,
