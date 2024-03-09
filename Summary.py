@@ -70,6 +70,7 @@ class Summary :
                end_date = '9999'):
     #self.cols = sl().result
     #self.idxcal = calendar
+    self.mode = mode
     self.dfs_days = self.list_dfs()
     self.monthly_df = {}
     self.annually_df = {}
@@ -82,7 +83,7 @@ class Summary :
   
   def list_dfs(self,cal:str='filter')->dict[str, pd.DataFrame]:
     if self.mode == 'local'  : root = root_ssi
-    if self.mode == 'remote' : root = raw_pxdb    
+    if self.mode == 'remote' : root = raw_pxdb
     if cal == 'filter'       : dates = self.filter_cals
     if cal == 'full'         : dates = self.full_cals
     dict_df = {}
