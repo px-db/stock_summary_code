@@ -265,8 +265,10 @@ class Summary :
     # 04
     Jika sudah melakukan update kalendar update full_cals, dengan memanggil fungsi ini.
     '''
+    if self.mode == 'local'  : root = root_ssi
+    if self.mode == 'remote' : root = raw_pxdb
     # update kalender
-    self.full_cals = [str(d) for d in pd.read_csv(f'{root_ssi}/kalender_market_idx.csv')['kalender'].tolist()]
+    self.full_cals = [str(d) for d in pd.read_csv(f'{root}/kalender_market_idx.csv')['kalender'].tolist()]
     return self
   
   def set_periodic_cal(self,
