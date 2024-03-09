@@ -307,7 +307,7 @@ class Summary :
       end_date += "12"
     self.filter_cals = list((d for d in self.full_cals if start_date <= d[:x] <= end_date))
 
-    for i in self.filter :
+    for i in self.filter_cals :
       if i[:4] in self.annually_cals :
         self.annually_cals[i[:4]].append(i)
       else :
