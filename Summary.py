@@ -234,6 +234,8 @@ class Summary :
     # 03
     update file kalender_market_idx.csv
     '''
+    if self.mode == 'local'  : root = root_ssi
+    if self.mode == 'remote' : root = raw_pxdb
     # Cek existing calender
     scan_cal = {
                 'kalender':[],
@@ -255,7 +257,7 @@ class Summary :
     df = pd.DataFrame(scan_cal).sort_values('kalender')
 
     # update file kalender_market_idx.csv
-    df.to_csv(f'{root_ssi}/kalender_market_idx.csv', mode='a', index=False, header=False)
+    df.to_csv(f'{root}/kalender_market_idx.csv', mode='a', index=False, header=False)
     return self
 
   def update_full_cal(self):
