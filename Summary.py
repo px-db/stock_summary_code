@@ -294,12 +294,12 @@ class Summary :
     self.filter_cals = []
 
     for i in self.full_cals :
-      if i[:4] not in self.years :
-        self.years.append(i[:4])
-      if i[:6] not in self.years :
+      if i[:4] not in self.years_cals :
+        self.years_cals.append(i[:4])
+      if i[:6] not in self.years_cals :
         self.months.append(i[:6])
     self.months = list(set(self.months))
-    self.years = list(set(self.years))
+    self.years_cals = list(set(self.years_cals))
 
     # Filtering
     x = len(start_date)
