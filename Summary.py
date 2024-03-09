@@ -71,15 +71,12 @@ class Summary :
     #self.cols = sl().result
     #self.idxcal = calendar
     self.mode = mode
+    self.set_periodic_cal(start_date=start_date, end_date=end_date)
     self.dfs_days = self.list_dfs()
     self.monthly_df = {}
     self.annually_df = {}
     self.set_periodic_df()
     self.summary = {}
-
-    #========================================
-    self.mode = mode
-    self.set_periodic_cal(start_date=start_date, end_date=end_date)
   
   def list_dfs(self,cal:str='filter')->dict[str, pd.DataFrame]:
     if self.mode == 'local'  : root = root_ssi
