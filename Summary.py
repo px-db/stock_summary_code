@@ -297,8 +297,8 @@ class Summary :
       if i[:4] not in self.years_cals :
         self.years_cals.append(i[:4])
       if i[:6] not in self.years_cals :
-        self.months.append(i[:6])
-    self.months = list(set(self.months))
+        self.months_cals.append(i[:6])
+    self.months_cals = list(set(self.months_cals))
     self.years_cals = list(set(self.years_cals))
 
     # Filtering
@@ -308,14 +308,14 @@ class Summary :
     self.filter_cals = list((d for d in self.full_cals if start_date <= d[:x] <= end_date))
 
     for i in self.filter :
-      if i[:4] in self.annually :
-        self.annually[i[:4]].append(i)
+      if i[:4] in self.annually_cals :
+        self.annually_cals[i[:4]].append(i)
       else :
-        self.annually[i[:4]] = [i]
-      if i[:6] in self.monthly:
-        self.monthly[i[:6]].append(i)
+        self.annually_cals[i[:4]] = [i]
+      if i[:6] in self.monthly_cals:
+        self.monthly_cals[i[:6]].append(i)
       else :
-        self.monthly[i[:6]] = [i]
+        self.monthly_cals[i[:6]] = [i]
 
     # Count Number
     count = 1
@@ -323,7 +323,7 @@ class Summary :
     for i in self.filter_cals :
       if i[4:6] != prev_month :
         count = 1
-      self.count_no[i] = count
+      self.count_no_cals[i] = count
       count += 1
       prev_month = i[4:6]
   
