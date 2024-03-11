@@ -58,7 +58,9 @@ class Summary :
     monthly_summary  : {'yyyymm': df,...}
     annually_summary : {'yyyy': df,...}
     year_to_month : {'yyyymm':df}
-    summary : {'yyyymm':df...,'yyyy':df}
+    summary          : {'yyyymm':df...,'yyyy':df}
+    monthly_summary  : {}
+    annually_summary : {}
   '''
   def __init__(self,
                #calendar:IDX_Calendar,
@@ -68,21 +70,23 @@ class Summary :
     #self.cols = sl().result
     #self.idxcal = calendar
     self.mode = mode
+    if self.mode == 'local'  : self.root = root_ssi
+    if self.mode == 'remote' : self.root = raw_pxdb
     self.set_periodic_cal(start_date=start_date, end_date=end_date)
     self.dfs_days = self.list_dfs()
     self.monthly_df = {}
     self.annually_df = {}
     self.set_periodic_df()
     self.summary = {}
+    self.monthly_summary = {}
+    self.annually_summary = {}
   
   def list_dfs(self,cal:str='filter')->dict[str, pd.DataFrame]:
-    if self.mode == 'local'  : root = root_ssi
-    if self.mode == 'remote' : root = raw_pxdb
     if cal == 'filter'       : dates = self.filter_cals
     if cal == 'full'         : dates = self.full_cals
     dict_df = {}
     for d in dates :
-      dict_df[d] = pd.read_csv(f'{root}/short_col/{d[:4]}/stock_summary_{d}.csv',
+      dict_df[d] = pd.read_csv(f'{self.root}/short_col/{d[:4]}/stock_summary_{d}.csv',
                                      index_col = 'Stock Code'
                                      )
       dict_df[d].loc[:,('No')] = self.count_no_cals[d]
@@ -231,8 +235,6 @@ class Summary :
     # 03
     update file kalender_market_idx.csv
     '''
-    if self.mode == 'local'  : root = root_ssi
-    if self.mode == 'remote' : root = raw_pxdb
     # Cek existing calender
     scan_cal = {
                 'kalender':[],
@@ -254,7 +256,7 @@ class Summary :
     df = pd.DataFrame(scan_cal).sort_values('kalender')
 
     # update file kalender_market_idx.csv
-    df.to_csv(f'{root}/kalender_market_idx.csv', mode='a', index=False, header=False)
+    df.to_csv(f'{self.root}/kalender_market_idx.csv', mode='a', index=False, header=False)
     return self
 
   def update_full_cal(self):
@@ -262,10 +264,8 @@ class Summary :
     # 04
     Jika sudah melakukan update kalendar update full_cals, dengan memanggil fungsi ini.
     '''
-    if self.mode == 'local'  : root = root_ssi
-    if self.mode == 'remote' : root = raw_pxdb
     # update kalender
-    self.full_cals = [str(d) for d in pd.read_csv(f'{root}/kalender_market_idx.csv')['kalender'].tolist()]
+    self.full_cals = [str(d) for d in pd.read_csv(f'{self.root}/kalender_market_idx.csv')['kalender'].tolist()]
     return self
   
   def set_periodic_cal(self,
@@ -393,13 +393,17 @@ class Summary :
     Ambil data dari folder summary dan di set ke property self.summary.
     Jika belum ada bisa gunakan self.create_summary()
     '''
-    if self.mode == 'local'  : root = root_ssi
-    if self.mode == 'remote' : root = raw_pxdb
-
+    len_d = 0
     for cal in [self.months_cals, self.years_cals]:
       for d in cal :
-        self.summary[d] = pd.read_csv(f'{root}/summary/{d[:4]}/summary_{d}.csv',
+        len_d = len(d)
+        if len_d == 6 :
+          self.monthly_summary[d] = pd.read_csv(f'{self.root}/summary/{d[:4]}/summary_{d}.csv',
                                        index_col = 'Stock Code'
                                        )
-        
+        if len_d == 4 :
+          self.annually_summary[d] = pd.read_csv(f'{self.root}/summary/{d}/summary_{d}.csv',
+                                       index_col = 'Stock Code'
+                                       )
+    self.summary = self.annually_summary | self.monthly_summary # python > ver.3.9
     return self
