@@ -1,8 +1,5 @@
 import pandas as pd
 import os
-#from IDX_Calendar import IDX_Calendar
-#from Common import raw_pxdb, key_in_dict, repo_smi
-#from Selector_List import Selector_List as sl
 
 path_full_col = '../stock_summary_idx/full_col'
 path_short_col = '../stock_summary_idx/short_col'
@@ -123,7 +120,7 @@ class Summary :
 
   def create_summary(self):
     '''
-     
+    Jika file summary_x.csv tidak ada maka bisa di buat dengan metode ini.
     return :
       dict
     '''
@@ -277,13 +274,13 @@ class Summary :
                        ):
     '''
     # 05
-    full : ['yyyymmdd', ...]
-    months : ['yyyymm', ...]
-    years : ['yyyy', ...]
-    annually : {'yyyy':'yyyymmdd', ...}
-    monthly : {'yyyymm':'yyyymmdd', ...}
-    filter : ['yyyymmdd', ...]
-    count_no = {'yyyymmdd':1, 'yyyymmdd':2, ...}
+    full          : ['yyyymmdd', ...]
+    months_cals   : ['yyyymm', ...]
+    years_cals    : ['yyyy', ...]
+    annually_cals : {'yyyy':'yyyymmdd', ...}
+    monthly_cals  : {'yyyymm':'yyyymmdd', ...}
+    filter_cals   : ['yyyymmdd', ...]
+    count_no_cals : {'yyyymmdd':1, 'yyyymmdd':2, ...}
     '''
     self.update_full_cal()
     self.months_cals = []
@@ -390,3 +387,19 @@ class Summary :
           del df
           continue
         break
+
+  def get_summary(self) :
+    '''
+    Ambil data dari folder summary dan di set ke property self.summary.
+    Jika belum ada bisa gunakan self.create_summary()
+    '''
+    if self.mode == 'local'  : root = root_ssi
+    if self.mode == 'remote' : root = raw_pxdb
+
+    for cal in [self.months_cals, self.years_cals]:
+      for d in cal :
+        self.summary[d] = pd.read_csv(f'{root}/summary/{d[:4]}/summary_{d}.csv',
+                                       index_col = 'Stock Code'
+                                       )
+        
+    return self
