@@ -398,12 +398,18 @@ class Summary :
       for d in cal :
         len_d = len(d)
         if len_d == 6 :
-          self.monthly_summary[d]  = pd.read_csv(f'{self.root}/summary/summary_{d}.csv',
+          try :
+            self.monthly_summary[d]  = pd.read_csv(f'{self.root}/summary/summary_{d}.csv',
                                        index_col = 'Stock Code'
                                        )
+          except :
+            print(f'{d} dilewat')
         if len_d == 4 :
-          self.annually_summary[d] = pd.read_csv(f'{self.root}/summary/summary_{d}.csv',
+          try :
+            self.annually_summary[d] = pd.read_csv(f'{self.root}/summary/summary_{d}.csv',
                                        index_col = 'Stock Code'
                                        )
+          except :
+            print(f'{d} dilewat')
     self.summary = self.annually_summary | self.monthly_summary # python > ver.3.9
     return self
