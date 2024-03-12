@@ -4,7 +4,7 @@ import os
 path_full_col = '../stock_summary_idx/full_col'
 path_short_col = '../stock_summary_idx/short_col'
 root_ssi      = '../stock_summary_idx'
-path_summary = '../stock_summary_idx//summary'
+path_summary = '../stock_summary_idx/summary'
 raw_pxdb = 'https://raw.githubusercontent.com/px-db/stock_summary_idx/main'
 
 def in_list(test, list_to_test):
@@ -71,15 +71,24 @@ class Summary :
     #self.idxcal = calendar
     self.mode = mode
     if self.mode == 'local'  : self.root = root_ssi
-    if self.mode == 'remote' : self.root = raw_pxdb
-    self.set_periodic_cal(start_date=start_date, end_date=end_date)
-    self.dfs_days = self.list_dfs()
+    if self.mode == 'remote' : self.root = raw_pxdb    
     self.monthly_df = {}
-    self.annually_df = {}
-    self.set_periodic_df()
+    self.annually_df = {}    
     self.summary = {}
     self.monthly_summary = {}
     self.annually_summary = {}
+    self.list_cols = []
+    self.months_cals = []
+    self.years_cals = []
+    self.annually_cals = {}
+    self.monthly_cals ={}
+    self.count_no_cals = {}
+    self.filter_cals = []
+    self.df_chart = {}
+    self.set_periodic_cal(start_date=start_date, end_date=end_date)
+    self.dfs_days = self.list_dfs()
+    self.set_periodic_df()
+    
   
   def list_dfs(self,cal:str='filter')->dict[str, pd.DataFrame]:
     if cal == 'filter'       : dates = self.filter_cals
@@ -94,7 +103,7 @@ class Summary :
 
   def set_periodic_df (self):
     '''
-    
+    set untuk monthly_df dan annually_df
     '''
     periode = [self.monthly_cals, self.annually_cals]
     data = []
@@ -116,17 +125,21 @@ class Summary :
                      ignore_index=False
                      )
   
-  def save_summary_tocsv(self):
+  def save_summary_tocsv(self, path=path_summary):
+    '''
+    Simpan summary ke '../stock_summary_idx/summary/' (default)
+    
+    '''
     for k, v in self.summary.items():
-      pd.DataFrame(v).to_csv(f'{path_summary}/summary_{k}.csv')
-      print(f'{path_summary}/summary_{k}.csv sudah disimpan')
+      pd.DataFrame(v).to_csv(f'{path}/summary_{k}.csv', index=False)
+      print(f'{path}/summary_{k}.csv sudah disimpan')
     return self
 
   def create_summary(self):
     '''
     Jika file summary_x.csv tidak ada maka bisa di buat dengan metode ini.
-    return :
-      dict
+
+    set summary : dict{str:list}
     '''
     self.summary = {}
     list_summary = []
@@ -187,6 +200,7 @@ class Summary :
                }
           )
         self.summary[key] = list_summary
+        print(f'{key} created')
         list_summary = []
     return self
   
@@ -283,12 +297,6 @@ class Summary :
     count_no_cals : {'yyyymmdd':1, 'yyyymmdd':2, ...}
     '''
     self.update_full_cal()
-    self.months_cals = []
-    self.years_cals = []
-    self.annually_cals = {}
-    self.monthly_cals ={}
-    self.count_no_cals = {}
-    self.filter_cals = []
 
     for i in self.full_cals :
       if i[:4] not in self.years_cals :
@@ -328,7 +336,6 @@ class Summary :
     '''
     List kolom default ambil dari full_col
     '''
-
     last_year  = os.listdir(f'{path_file}')[-1]
     last_file= os.listdir(f'{path_file}/{last_year}/')[-1]
     self.list_cols = pd.read_csv(f'{path_file}/{last_year}/{last_file}').columns.tolist()
@@ -411,5 +418,33 @@ class Summary :
                                        )
           except :
             print(f'{d} dilewat')
-    self.summary = self.annually_summary | self.monthly_summary # python > ver.3.9
+    self.summary = {**self.annually_summary, **self.monthly_summary}
+    return self
+  
+  def set_chart(self, col:str='Close'):
+    cols = ['Prev','Open','Close','High','Volume']
+    if col not in cols:
+      print('Kolom yang dizinkan : ' + ', '.join(cols))
+    for y,d in self.annually_cals.items() :
+      if self.annually_df[y].iloc[0]['No']==1:
+        self.annually_df[y].loc[self.annually_df[y]['No']==1,('Close')]= self.annually_df[y].loc[self.annually_df[y]['No']==1,('Prev')].copy()
+
+      self.df_chart[y] = self.annually_df[y].pivot_table(
+                                     index = ['Stock Code','year','No'],
+                                     columns ='month',
+                                     values = col
+                                     )
+      self.df_chart[y] = self.df_chart[y].rename(columns = { 1:'Jan',
+                                                             2:'Feb',
+                                                             3:'Mar',
+                                                             4:'Apr',
+                                                             5:'Mei',
+                                                             6:'Jun',
+                                                             7:'Jul',
+                                                             8:'Agu',
+                                                             9:'Sep',
+                                                            10:'Okt',
+                                                            11:'Nov',
+                                                            12:'Des',
+                                                            })
     return self
