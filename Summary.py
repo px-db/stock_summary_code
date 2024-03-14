@@ -98,12 +98,14 @@ class Summary :
     if cal == 'filter'       : dates = self.filter_cals
     if cal == 'full'         : dates = self.full_cals
     dict_df = {}
-    for d in dates :
-      dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv',
-                                     index_col = 'Stock Code'
-                                     )
+    for d in dates :      
       if self.use_cols != 'full_col' :
+        dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv',
+                                     index_col = 'Stock Code'
+                                 )
         dict_df[d].loc[:,('NoDays')] = self.count_no_cals[d]
+        continue
+      dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv')
     return dict_df
 
   def set_periodic_df (self):
