@@ -65,6 +65,8 @@ class Summary :
   def __init__(self,
                #calendar:IDX_Calendar,
                mode = 'local',
+               col = 'short_col',
+               cal = 'filter',
                start_date='2019', 
                end_date = '9999'):
     #self.cols = sl().result
@@ -85,6 +87,8 @@ class Summary :
     self.count_no_cals = {}
     self.filter_cals = []
     self.df_chart = {}
+    self.use_cols = col
+    self.mode_cal = cal
     self.set_periodic_cal(start_date=start_date, end_date=end_date)
     self.dfs_days = self.list_dfs()
     self.set_periodic_df()
@@ -95,10 +99,10 @@ class Summary :
     if cal == 'full'         : dates = self.full_cals
     dict_df = {}
     for d in dates :
-      dict_df[d] = pd.read_csv(f'{self.root}/short_col/{d[:4]}/stock_summary_{d}.csv',
+      dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv',
                                      index_col = 'Stock Code'
                                      )
-      dict_df[d].loc[:,('No')] = self.count_no_cals[d]
+      dict_df[d].loc[:,('NoDays')] = self.count_no_cals[d]
     return dict_df
 
   def set_periodic_df (self):
@@ -203,8 +207,6 @@ class Summary :
         print(f'{key} created')
         list_summary = []
     return self
-  
-  # ==============================================================
 
   def scan_dir_download(self):
     '''
