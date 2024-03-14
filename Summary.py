@@ -102,7 +102,8 @@ class Summary :
       dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv',
                                      index_col = 'Stock Code'
                                      )
-      dict_df[d].loc[:,('NoDays')] = self.count_no_cals[d]
+      if self.use_cols != 'full_col' :
+        dict_df[d].loc[:,('NoDays')] = self.count_no_cals[d]
     return dict_df
 
   def set_periodic_df (self):
