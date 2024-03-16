@@ -87,26 +87,27 @@ class Summary :
     self.count_no_cals = {}
     self.filter_cals = []
     self.df_chart = {}
-    self.use_cols = col
-    self.mode_cal = cal
     self.set_periodic_cal(start_date=start_date, end_date=end_date)
-    self.dfs_days = self.list_dfs()
-    self.set_periodic_df()
-    
+    self.dfs_days = {}    
   
-  def list_dfs(self,cal:str='filter')->dict[str, pd.DataFrame]:
+  def set_dfs_days(self,
+                   cal = 'filter',
+                   path_col= 'short_col',
+                   use_index:bool=False
+                   )->dict[str, pd.DataFrame]:
     if cal == 'filter'       : dates = self.filter_cals
     if cal == 'full'         : dates = self.full_cals
-    dict_df = {}
-    for d in dates :      
-      if self.use_cols != 'full_col' :
-        dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv',
-                                     index_col = 'Stock Code'
-                                 )
-        dict_df[d].loc[:,('NoDays')] = self.count_no_cals[d]
-        continue
-      dict_df[d] = pd.read_csv(f'{self.root}/{self.use_cols}/{d[:4]}/stock_summary_{d}.csv')
-    return dict_df
+    if use_index                       : args_read_csv = {
+      'index_col' : 'Stock Code'
+    }    
+    self.dfs_days = {}
+    for d in dates :
+      self.dfs_days[d] = pd.read_csv(
+        f'{self.root}/{path_col}/{d[:4]}/stock_summary_{d}.csv',
+        **args_read_csv
+      )
+      self.dfs_days[d].loc[:,('Days')] = self.count_no_cals[d]
+    return self
 
   def set_periodic_df (self):
     '''
