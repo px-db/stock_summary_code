@@ -65,8 +65,6 @@ class Summary :
   def __init__(self,
                #calendar:IDX_Calendar,
                mode = 'local',
-               col = 'short_col',
-               cal = 'filter',
                start_date='2019', 
                end_date = '9999'):
     #self.cols = sl().result
@@ -246,7 +244,7 @@ class Summary :
       return None
     # Read xlsx and convert csv
     for file_xlsx, file_csv in self.dict_download.items():
-      pd.read_excel(file_xlsx).to_csv(file_csv, index=False)
+      pd.read_excel(f'download/{file_xlsx}').to_csv(file_csv, index=False)
       print(file_csv)
     return self
   
