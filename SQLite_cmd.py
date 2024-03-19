@@ -63,3 +63,14 @@ class SQLite_cmd :
 
     rows = cur.fetchall()
     return rows
+  
+  def select_table(self, conn, table, columns=None):
+    cur = conn.cursor()
+    if columns == None :
+      cur.execute(f"SELECT * FROM [{table}]")
+    else :
+      columns_def = ', '.join([f'"{col}" TEXT' for col in columns])
+      cur.execute(f"SELECT ({columns_def}) FROM [{table}]")
+
+    rows = cur.fetchall()
+    return rows
