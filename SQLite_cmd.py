@@ -48,3 +48,18 @@ class SQLite_cmd :
         print("Error:", e)
     return self
 
+  def select_top(conn, table,  n):
+    """
+    Query n first rows of the table
+    parameter :
+      conn: the Connection object
+      table: The table to query
+      n: Number of rows to query
+    return :
+      rows
+    """
+    cur = conn.cursor()
+    cur.execute(f"SELECT * FROM [{table}] LIMIT :limitNum", {"limitNum": n})
+
+    rows = cur.fetchall()
+    return rows
