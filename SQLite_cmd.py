@@ -12,6 +12,7 @@ class SQLite_cmd :
 
   # ###############################################################################################
   # OPERASI NON CRUD
+  # DDL (Data Definition Language)
   # ###############################################################################################
   def set_conn(self,sqlite_db:str):
     try:
@@ -34,6 +35,37 @@ class SQLite_cmd :
       return False
     return True
   
+  def delete_table(self,table_name:str):
+    if not self.check_conn() : return None
+    try:
+      # Eksekusi perintah SQL untuk menghapus tabel
+      self.cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+      self.conn.commit()
+      print(f"Table {table_name} has deleted.")
+    except sqlite3.Error as e:
+      self.print_e(e)
+      self.conn.rollback()
+      print("data is returned to original state")
+    return self
+  
+  def delete_column(self, table_name:str, column_name:str):
+    if not self.check_conn() : return None
+    # Definisikan perintah SQL untuk menghapus kolom
+    alter_query = f"""
+    ALTER TABLE "{table_name}"
+    DROP COLUMN "{column_name}"
+    """    
+    try:
+      # Eksekusi perintah SQL
+      self.cursor.execute(alter_query)
+      self.conn.commit()
+      print(f"column {column_name} has deleted.")
+    except sqlite3.Error as e:
+      self.print_e(e)
+      self.conn.rollback()
+      print("data is returned to original state")
+    return self
+  
   # Fungsi untuk membuat tabel di SQLite
   def create_table(self, table_name:str, columns:list):
     if not self.check_conn() : return None
@@ -41,9 +73,36 @@ class SQLite_cmd :
     self.cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_def})')
     return self
   
+  def column_to_list(self,table) :
+    if not self.check_conn() : return None
+
+    # Mendapatkan nama kolom dari tabel
+    self.cursor.execute(f"PRAGMA table_info({table})")
+    columns = self.cursor.fetchall()
+    
+    # Mengonversi nama kolom menjadi list
+    return [column[1] for column in columns]
+  
   # ###############################################################################################
-  # CREATE
-  # Kelompok Create : INSERT
+  # CREATE (INSERT)
+  #   INSERT INTO users (name, age) VALUES (?, ?);
+  # query insert data satu baris :
+  #     INSERT INTO nama_tabel (kolom1, kolom2, kolom3, ...)
+  #     VALUES (nilai1, nilai2, nilai3, ...);
+  #     atau
+  #     INSERT INTO nama_tabel
+  #     VALUES (nilai1, nilai2, nilai3, ...);
+  # 
+  # query insert data lebih dari 1 :
+  #   INSERT INTO nama_tabel (kolom1, kolom2, kolom3, ...)
+  #   VALUES (nilai1, nilai2, nilai3, ...),
+  #          (nilai1, nilai2, nilai3, ...),
+  #          (nilai1, nilai2, nilai3, ...);
+  #   atau
+  #   INSERT INTO nama_tabel
+  #   VALUES (nilai1, nilai2, nilai3, ...),
+  #          (nilai1, nilai2, nilai3, ...),
+  #          (nilai1, nilai2, nilai3, ...);
   # ###############################################################################################
 
   # Fungsi untuk memasukkan data dari CSV ke SQLite
@@ -62,25 +121,7 @@ class SQLite_cmd :
     return self
   
   def insert_data(self, table:str, data:list):
-    """
-    query insert data satu baris :
-      INSERT INTO nama_tabel (kolom1, kolom2, kolom3, ...)
-      VALUES (nilai1, nilai2, nilai3, ...);
-      atau
-      INSERT INTO nama_tabel
-      VALUES (nilai1, nilai2, nilai3, ...);
-
-    query insert data lebih dari 1 :
-      INSERT INTO nama_tabel (kolom1, kolom2, kolom3, ...)
-      VALUES (nilai1, nilai2, nilai3, ...),
-             (nilai1, nilai2, nilai3, ...),
-             (nilai1, nilai2, nilai3, ...);
-      atau
-      INSERT INTO nama_tabel
-      VALUES (nilai1, nilai2, nilai3, ...),
-             (nilai1, nilai2, nilai3, ...),
-             (nilai1, nilai2, nilai3, ...);
-    
+    """    
     parameter :
       table : nama tabel
       data  : (data1, data2, data3, ...)
@@ -102,8 +143,9 @@ class SQLite_cmd :
     return self
 
   # ###############################################################################################
-  # READ
-  # Kelompok READ : SELECT
+  # READ (SELECT)
+  #   SELECT column1, column2, ... FROM table_name WHERE condition
+  #   SELECT * FROM table_name
   # ###############################################################################################
 
   def select_row(self,table_name, column, value):
@@ -142,50 +184,38 @@ class SQLite_cmd :
     return rows
 
   # ###############################################################################################
-  # UPDATE
-  # Kelompok update : UPDATE
+  # UPDATE (UPDATE)
+  #   UPDATE table_name SET column1 = value1, column2 = value2, ... WHERE condition
   # ###############################################################################################
 
+  def update_data(self, table, set_values, condition):
+    """
+      Metode untuk melakukan operasi update pada data dalam tabel.
 
-  def update(self):
+      Parameters:
+      - table: Nama tabel yang akan diupdate.
+      - set_values: Dictionary yang berisi pasangan kolom dan nilai yang akan diubah.
+      - condition: Kondisi untuk mengidentifikasi baris yang akan diupdate.
+
+      Contoh penggunaan:
+      db.update_data('users', {'name': 'John Doe', 'age': 35}, 'id = 1')
+    """
     if not self.check_conn() : return None
-    pass
-
-  # ###############################################################################################
-  # DELETE
-  # Kelompok delete : DELETE
-  # ###############################################################################################
-
-  def delete_table(self,table_name:str):
-    if not self.check_conn() : return None
+    set_clause = ", ".join([f"{column} = ?" for column in set_values.keys()])
+    query = f"UPDATE {table} SET {set_clause} WHERE {condition};"
     try:
-      # Eksekusi perintah SQL untuk menghapus tabel
-      self.cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+      self.cursor.execute(query, list(set_values.values()))
       self.conn.commit()
-      print(f"Table {table_name} has deleted.")
+      print("Data updated successfully!")
     except sqlite3.Error as e:
       self.print_e(e)
       self.conn.rollback()
       print("data is returned to original state")
-    return self
-  
-  def delete_column(self, table_name:str, column_name:str):
-    if not self.check_conn() : return None
-    # Definisikan perintah SQL untuk menghapus kolom
-    alter_query = f"""
-    ALTER TABLE "{table_name}"
-    DROP COLUMN "{column_name}"
-    """    
-    try:
-      # Eksekusi perintah SQL
-      self.cursor.execute(alter_query)
-      self.conn.commit()
-      print(f"column {column_name} has deleted.")
-    except sqlite3.Error as e:
-      self.print_e(e)
-      self.conn.rollback()
-      print("data is returned to original state")
-    return self
+
+  # ###############################################################################################
+  # DELETE (DELETE)
+  #   DELETE FROM table_name WHERE condition
+  # ###############################################################################################
   
   def delete_row(self,table_name:str, condition=None):
     '''
@@ -217,16 +247,42 @@ class SQLite_cmd :
 
   # ###############################################################################################
   # GENERAL CRUD
-  # Untuk query umum
+  # 
+  # Membuat Table :
+  #   ```
+  #   CREATE TABLE IF NOT EXISTS users (
+  #     id INTEGER PRIMARY KEY,
+  #     name TEXT NOT NULL,
+  #     age INTEGER
+  #   );
+  #   ```
+  #
+  # Menambahkan data ke tabel :
+  #   ```
+  #   q = "INSERT INTO users (name, age) VALUES (?, ?);""
+  #   execute_query(q, ('alice', 30))
+  #   ```
+  #
+  # Melakukan query untuk mendapatkan data :
+  #   ```
+  #   q = SELECT * FROM users;
+  #   result = db.execute_query(q)
+  #   ```
   # ###############################################################################################
-  def query_execute(self, query):
-    if not self.check_conn() : return None
-    self.cursor.execute(query)
-    return self.cursor.fetchall()
-  
-  
 
-  
+  def execute_query(self, query, paramters=None):
+    if not self.check_conn() : return None
+    try :
+      if paramters :
+        self.cursor.execute(query, paramters)
+      else :
+        self.cursor.execute(query)
+      self.conn.commit()
+      return self.cursor.fetchall()
+    except sqlite3.Error as e:
+      self.print_e(e)
+      self.conn.rollback()
+      print("data is returned to original state")
   
 
   def print_e(self,e):
