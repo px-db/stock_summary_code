@@ -206,7 +206,7 @@ class SQLite_cmd :
     rows = self.cursor.fetchall()
     return rows
   
-  def select(self, table, columns=None):
+  def select(self, table, columns:list=None):
     if not self.check_conn() : return None
     if columns == None :
       self.cursor.execute(f"SELECT * FROM [{table}]")
@@ -216,19 +216,19 @@ class SQLite_cmd :
     rows = self.cursor.fetchall()
     return rows
   
-  def read_sql_to_df(self, table, column=None):
+  def read_sql_to_df(self, table, column:list=None):
     if not self.check_conn() : return None
     if column == None :
-      return pd.read_sql(f"SELECT * FROM [{table}]", self.conn)
+      return pd.read_sql(f"SELECT * FROM {table}", self.conn)
     columns_def = ', '.join([f'"{col}" TEXT' for col in column])
-    return pd.read_sql(f"SELECT ({columns_def}) FROM [{table}]",self.conn)
+    return pd.read_sql(f"SELECT ({columns_def}) FROM [{table}]", self.conn)
     
-  def read_table_to_df(self, table):
+  def read_table_to_df(self, table, con):
     """
     Baca seluruh tabel
     """
     if not self.check_conn() : return None
-    return pd.read_sql_table(table, self.conn)
+    return pd.read_sql_table(table,con)
   
   def read_query_to_df(self,query):
     if not self.check_conn() : return None
