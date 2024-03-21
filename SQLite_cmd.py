@@ -262,6 +262,7 @@ class SQLite_cmd :
       self.print_e(e)
       self.conn.rollback()
       print("data is returned to original state")
+    return self
 
   # ###############################################################################################
   # DELETE (DELETE)
@@ -334,6 +335,7 @@ class SQLite_cmd :
       self.print_e(e)
       self.conn.rollback()
       print("data is returned to original state")
+    return self
   
 
   def print_e(self,e):
