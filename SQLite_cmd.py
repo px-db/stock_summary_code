@@ -84,10 +84,28 @@ class SQLite_cmd :
   
   def csv_to_sqlite(self, table, file_csv, cols=None):
     if not self.check_conn() : return None
-    pd.read_csv(file_csv, usecols=cols).to_sql(table,
-                                               self.conn,
-                                               if_exists='append',
-                                               index=False)
+    self.df_to_sqlite(table,
+                      pd.read_csv(file_csv,
+                                  usecols=cols
+                                  )
+                      )
+    return self
+  
+  def xlsx_to_sqlite(self, table, file_xlsx, cols=None):
+    if not self.check_conn() : return None
+    self.df_to_sqlite(table,
+                      pd.read_excel(file_xlsx,
+                                    usecols=cols
+                                    )
+                      )
+    return self
+  
+  def df_to_sqlite(self, table, df):
+    if not self.check_conn() : return None
+    df.to_sql(table,
+              self.conn,
+              if_exists='append',
+              index=False)
     return self
   
   def get_column_to_list(self,table)->list :
@@ -197,6 +215,24 @@ class SQLite_cmd :
       self.cursor.execute(f"SELECT ({columns_def}) FROM [{table}]")
     rows = self.cursor.fetchall()
     return rows
+  
+  def read_sql_to_df(self, table, column=None):
+    if not self.check_conn() : return None
+    if column == None :
+      return pd.read_sql(f"SELECT * FROM [{table}]", self.conn)
+    columns_def = ', '.join([f'"{col}" TEXT' for col in column])
+    return pd.read_sql(f"SELECT ({columns_def}) FROM [{table}]",self.conn)
+    
+  def read_table_to_df(self, table):
+    """
+    Baca seluruh tabel
+    """
+    if not self.check_conn() : return None
+    return pd.read_sql_table(table, self.conn)
+  
+  def read_query_to_df(self,query):
+    if not self.check_conn() : return None
+    return pd.read_sql_query(query, self.conn)
 
   # ###############################################################################################
   # UPDATE (UPDATE)
