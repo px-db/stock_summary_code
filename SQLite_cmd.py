@@ -7,7 +7,7 @@ class SQLite_cmd :
   class Summary_sqlite mengambil data dari database sqlite
   #################################################################################################
   '''
-  def __init__(self, file_sqlite:str='Stock_Summary.sqlite'):
+  def __init__(self, file_sqlite):
     self.sqlite_db  = file_sqlite
     self.conn       = None
     self.cursor     = None
