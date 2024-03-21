@@ -1,8 +1,11 @@
 import sqlite3
+import pandas as pd
 
 class SQLite_cmd :
   '''
+  #################################################################################################
   class Summary_sqlite mengambil data dari database sqlite
+  #################################################################################################
   '''
   def __init__(self, file_sqlite:str='Stock_Summary.sqlite'):
     self.sqlite_db  = file_sqlite
@@ -73,13 +76,25 @@ class SQLite_cmd :
     self.cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_def})')
     return self
   
-  def column_to_list(self,table) :
+  def create_table_from_csv(self, table, file_csv):
     if not self.check_conn() : return None
-
+    cols = pd.read_csv(file_csv).columns.tolist()
+    self.create_table(table,cols)
+    return self
+  
+  def csv_to_sqlite(self, table, file_csv, cols=None):
+    if not self.check_conn() : return None
+    pd.read_csv(file_csv, usecols=cols).to_sql(table,
+                                               self.conn,
+                                               if_exists='append',
+                                               index=False)
+    return self
+  
+  def get_column_to_list(self,table)->list :
+    if not self.check_conn() : return None
     # Mendapatkan nama kolom dari tabel
     self.cursor.execute(f"PRAGMA table_info({table})")
-    columns = self.cursor.fetchall()
-    
+    columns = self.cursor.fetchall()    
     # Mengonversi nama kolom menjadi list
     return [column[1] for column in columns]
   
