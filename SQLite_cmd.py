@@ -200,7 +200,7 @@ class SQLite_cmd :
       self.print_e(e)
     return row
   
-  def select_col(self, columns:list, table_name=None):
+  def column(self, columns:list, table_name=None):
     if not self.check_conn() : return None
     table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'    
     try:
@@ -239,8 +239,12 @@ class SQLite_cmd :
   def select(self,query):
     if not self.check_conn() : return None
     self.cursor.execute(query)
-    rows = self.cursor.fetchall()
-    return rows
+    return self.cursor.fetchall()
+  
+  def table(self,table_name):
+    if not self.check_conn() : return None
+    self.cursor.execute(self.q_read(table_name=table_name))
+    return self.cursor.fetchall()
   
   def read_sql_to_df(self, table_name=None, column:list=None):
     if not self.check_conn() : return None
