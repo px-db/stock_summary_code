@@ -12,6 +12,7 @@ class SQLite_cmd :
     self.conn       = None
     self.cursor     = None
     self.set_conn(self.sqlite_db)
+    self.__table = ''
 
   # ###############################################################################################
   # OPERASI NON CRUD
@@ -76,42 +77,43 @@ class SQLite_cmd :
     self.cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_def})')
     return self
   
-  def create_table_from_csv(self, table, file_csv):
+  def create_table_from_csv(self, table_name, file_csv):
     if not self.check_conn() : return None
     cols = pd.read_csv(file_csv).columns.tolist()
-    self.create_table(table,cols)
+    self.create_table(table_name,cols)
     return self
   
-  def csv_to_sqlite(self, table, file_csv, cols=None):
+  def csv_to_sqlite(self, table_name, file_csv, cols=None):
     if not self.check_conn() : return None
-    self.df_to_sqlite(table,
+    self.df_to_sqlite(table_name,
                       pd.read_csv(file_csv,
                                   usecols=cols
                                   )
                       )
     return self
   
-  def xlsx_to_sqlite(self, table, file_xlsx, cols=None):
+  def xlsx_to_sqlite(self, table_name, file_xlsx, cols=None):
     if not self.check_conn() : return None
-    self.df_to_sqlite(table,
+    self.df_to_sqlite(table_name,
                       pd.read_excel(file_xlsx,
                                     usecols=cols
                                     )
                       )
     return self
   
-  def df_to_sqlite(self, table, df):
+  def df_to_sqlite(self, table_name, df):
     if not self.check_conn() : return None
-    df.to_sql(table,
+    df.to_sql(table_name,
               self.conn,
               if_exists='append',
               index=False)
     return self
   
-  def get_column_to_list(self,table)->list :
+  def get_column_to_list(self,table_name=None)->list :
     if not self.check_conn() : return None
+    if not table_name : table_name = self.__table
     # Mendapatkan nama kolom dari tabel
-    self.cursor.execute(f"PRAGMA table_info({table})")
+    self.cursor.execute(f"PRAGMA table_info({table_name})")
     columns = self.cursor.fetchall()    
     # Mengonversi nama kolom menjadi list
     return [column[1] for column in columns]
@@ -153,7 +155,7 @@ class SQLite_cmd :
     self.cursor.executemany(f'INSERT INTO "{table_name}" VALUES ({placeholders})', data)
     return self
   
-  def insert_data(self, table:str, data:list):
+  def insert_data(self, table_name:str, data:list):
     """    
     parameter :
       table : nama tabel
@@ -162,7 +164,7 @@ class SQLite_cmd :
     """
     if not self.check_conn() : return None
     # Membuat query SQL untuk memasukkan data
-    query = f"INSERT INTO {table} VALUES ({', '.join(['?' for _ in range(len(data))])})"
+    query = f"INSERT INTO {table_name} VALUES ({', '.join(['?' for _ in range(len(data))])})"
     
     try:
       # Menjalankan query untuk memasukkan data
@@ -181,18 +183,32 @@ class SQLite_cmd :
   #   SELECT * FROM table_name
   # ###############################################################################################
 
-  def select_row(self,table_name, column, value):
+  def select_row(self,column, value, table_name=None):
     if not self.check_conn() : return None
+    if not table_name : table_name = self.__table
     try:
       # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
-      self.cursor.execute(f"SELECT * FROM {table_name} WHERE {column} = ?", (value,))      
+      self.cursor.execute(f"SELECT * FROM {table_name} WHERE \"{column}\" = ?", (value,))      
       # Ambil satu baris yang dipilih
       row = self.cursor.fetchone()
     except sqlite3.Error as e:
       self.print_e(e)
     return row
+  
+  def select_col(self, columns:list, table_name=None):
+    if not self.check_conn() : return None
+    if not table_name : table_name = self.__table
+    try:
+      # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
+      columns_def = ', '.join([f'"{col}"' for col in columns])
+      self.cursor.execute(f"SELECT {columns_def} FROM {table_name}")
+      # Ambil satu baris yang dipilih
+      return self.cursor.fetchone()
+    except sqlite3.Error as e:
+      self.print_e(e)
+    return self
 
-  def select_top(self, table,  n):
+  def select_top(self, n, table_name=None):
     """
     Query n first rows of the table
     parameter :
@@ -202,33 +218,30 @@ class SQLite_cmd :
     return :
       rows
     """
-    self.cursor.execute(f"SELECT * FROM [{table}] LIMIT :limitNum", {"limitNum": n})
+    if not self.check_conn() : return None
+    if not table_name : table_name = self.__table
+    self.cursor.execute(f"SELECT * FROM [{table_name}] LIMIT :limitNum", {"limitNum": n})
     rows = self.cursor.fetchall()
     return rows
   
-  def select(self, table, columns:list=None):
+  def select(self,columns:list, table_name=None):
     if not self.check_conn() : return None
+    if not table_name : table_name = self.__table
     if columns == None :
-      self.cursor.execute(f"SELECT * FROM [{table}]")
+      self.cursor.execute(f"SELECT * FROM [{table_name}]")
     else :
       columns_def = ', '.join([f'"{col}"' for col in columns])
-      self.cursor.execute(f"SELECT ({columns_def}) FROM [{table}]")
+      self.cursor.execute(f"SELECT ({columns_def}) FROM [{table_name}]")
     rows = self.cursor.fetchall()
     return rows
   
-  def read_sql_to_df(self, table, column:list=None):
+  def read_sql_to_df(self, table_name=None, column:list=None):
     if not self.check_conn() : return None
+    if not table_name : table_name = self.__table
     if column == None :
-      return pd.read_sql(f"SELECT * FROM {table}", self.conn)
+      return pd.read_sql(f"SELECT * FROM {table_name}", self.conn)
     columns_def = ', '.join([f'"{col}" TEXT' for col in column])
-    return pd.read_sql(f"SELECT ({columns_def}) FROM [{table}]", self.conn)
-    
-  def read_table_to_df(self, table, con):
-    """
-    Baca seluruh tabel
-    """
-    if not self.check_conn() : return None
-    return pd.read_sql_table(table,con)
+    return pd.read_sql(f"SELECT ({columns_def}) FROM [{table_name}]", self.conn)    
   
   def read_query_to_df(self,query):
     if not self.check_conn() : return None
@@ -337,6 +350,13 @@ class SQLite_cmd :
       print("data is returned to original state")
     return self
   
+  # ###############################################################################################
+  # GENERAL
+  # ###############################################################################################
+
+  def set_table(self, table_name):
+    self.__table = table_name
+    return self
 
   def print_e(self,e):
      print("Error:", e)
