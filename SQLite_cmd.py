@@ -211,7 +211,7 @@ class SQLite_cmd :
     if columns == None :
       self.cursor.execute(f"SELECT * FROM [{table}]")
     else :
-      columns_def = ', '.join([f'"{col}" TEXT' for col in columns])
+      columns_def = ', '.join([f'"{col}"' for col in columns])
       self.cursor.execute(f"SELECT ({columns_def}) FROM [{table}]")
     rows = self.cursor.fetchall()
     return rows
