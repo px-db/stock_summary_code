@@ -303,8 +303,7 @@ class SQLite_cmd :
     li = f'\nLIMIT {limit}' if limit else ''
     of = f' OFFSET {offset}' if offset else ''
     
-    q = f'SELECT {di}{co}{tb}{cn}{gr}{hv}{od}{ac}{li}{of};'
-    return q
+    return f'SELECT {di}{co}{tb}{cn}{gr}{hv}{od}{ac}{li}{of};'
 
   # ###############################################################################################
   # UPDATE (UPDATE)
