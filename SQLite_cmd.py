@@ -185,10 +185,15 @@ class SQLite_cmd :
 
   def select_row(self,column, value, table_name=None):
     if not self.check_conn() : return None
-    if not table_name : table_name = self.__table
+    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'
+    
     try:
       # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
-      self.cursor.execute(f"SELECT * FROM {table_name} WHERE \"{column}\" = ?", (value,))      
+      self.cursor.execute(self.q_read(
+                                      table_name= table_name,
+                                      condition = f'"{column}" = {value}'
+                                     )
+                          )      
       # Ambil satu baris yang dipilih
       row = self.cursor.fetchone()
     except sqlite3.Error as e:
@@ -197,11 +202,14 @@ class SQLite_cmd :
   
   def select_col(self, columns:list, table_name=None):
     if not self.check_conn() : return None
-    if not table_name : table_name = self.__table
+    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'    
     try:
       # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
-      columns_def = ', '.join([f'"{col}"' for col in columns])
-      self.cursor.execute(f"SELECT {columns_def} FROM {table_name}")
+      self.cursor.execute(self.q_read(
+                                      columns=columns,
+                                      table_name=table_name
+                                     )
+                          )
       # Ambil satu baris yang dipilih
       return self.cursor.fetchone()
     except sqlite3.Error as e:
@@ -219,33 +227,84 @@ class SQLite_cmd :
       rows
     """
     if not self.check_conn() : return None
-    if not table_name : table_name = self.__table
-    self.cursor.execute(f"SELECT * FROM [{table_name}] LIMIT :limitNum", {"limitNum": n})
+    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'
+    self.cursor.execute(self.q_read(
+                                   table_name=table_name,
+                                   limit=n
+                                   )
+                        )
     rows = self.cursor.fetchall()
     return rows
   
-  def select(self,columns:list, table_name=None):
+  def select(self,query):
     if not self.check_conn() : return None
-    if not table_name : table_name = self.__table
-    if columns == None :
-      self.cursor.execute(f"SELECT * FROM [{table_name}]")
-    else :
-      columns_def = ', '.join([f'"{col}"' for col in columns])
-      self.cursor.execute(f"SELECT ({columns_def}) FROM [{table_name}]")
+    self.cursor.execute(query)
     rows = self.cursor.fetchall()
     return rows
   
   def read_sql_to_df(self, table_name=None, column:list=None):
     if not self.check_conn() : return None
-    if not table_name : table_name = self.__table
-    if column == None :
+    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'
+    if column : 
+      return pd.read_sql(self.q_read(
+                                     table_name=table_name,
+                                     columns=column
+                                    ), self.conn)
+    else :
       return pd.read_sql(f"SELECT * FROM {table_name}", self.conn)
-    columns_def = ', '.join([f'"{col}" TEXT' for col in column])
-    return pd.read_sql(f"SELECT ({columns_def}) FROM [{table_name}]", self.conn)    
+    
   
   def read_query_to_df(self,query):
     if not self.check_conn() : return None
     return pd.read_sql_query(query, self.conn)
+  
+  def q_read(self,
+           distinct:bool  = False,
+           columns:list   = None,
+           condition:str  = None,
+           group:str      = None,
+           having:str     = None,
+           order:str      = None,
+           ascending :str = None,
+           limit:int      = None,
+           offset:int     = None,
+           table_name     = None,
+           ):
+    """
+    contoh query SELECT :
+      SELECT name, age, department 
+      FROM employees 
+      [ WHERE department = 'Sales']
+      [ GROUP BY department ]
+      [ HAVING AVG(age) > 30 ]
+      [ ORDER BY name ASC ]
+      [ LIMIT 10 OFFSET 0;]
+    parameter :
+      - distinct:bool  = False,
+      - columns:list   = None,
+      - condition:str  = None,
+      - group:str      = None,
+      - having:str     = None,
+      - order:str      = None,
+      - ascending :str = None,
+      - limit:int      = None,
+      - offset:int     = None,
+      - table_name     = None,
+
+    """
+    tb = '\nFROM '+(f'"{table_name}"\n' if table_name else f'"{self.__table}"')
+    co = (', '.join([f'"{c}"' for c in columns]) if columns else "*")
+    cn = f'\nWHERE {condition}' if condition else ''
+    di = 'DISTINCT ' if distinct else ''
+    gr = f'\nGROUP BY "{group}"' if group else ''
+    hv = f'\nHAVING {having}' if having else ''
+    od = f'\nORDER BY "{order}"' if order else ''
+    ac = f' {ascending}' if ascending else ''
+    li = f'\nLIMIT {limit}' if limit else ''
+    of = f' OFFSET {offset}' if offset else ''
+    
+    q = f'SELECT {di}{co}{tb}{cn}{gr}{hv}{od}{ac}{li}{of};'
+    return q
 
   # ###############################################################################################
   # UPDATE (UPDATE)
