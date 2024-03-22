@@ -293,7 +293,7 @@ class SQLite_cmd :
 
     """
     tb = '\nFROM '+(f'"{table_name}"\n' if table_name else f'"{self.__table}"')
-    co = (', '.join([f'"{c}"' for c in columns]) if columns else "*")
+    co = ', '.join([f'"{c}"' for c in columns]) if columns else "*"
     cn = f'\nWHERE {condition}' if condition else ''
     di = 'DISTINCT ' if distinct else ''
     gr = f'\nGROUP BY "{group}"' if group else ''
