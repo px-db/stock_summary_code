@@ -118,6 +118,27 @@ class SQLite_cmd :
     # Mengonversi nama kolom menjadi list
     return [column[1] for column in columns]
   
+  def add_column(self, table_name:str, column_name:str, data_type:str):
+    '''
+    ALTER TABLE nama_tabel
+    ADD COLUMN nama_kolom tipe_data;
+
+    '''
+    alter_query = f"""
+    ALTER TABLE "{table_name}"
+    DROP COLUMN "{column_name} {data_type}"
+    """    
+    try:
+      # Eksekusi perintah SQL
+      self.cursor.execute(alter_query)
+      self.conn.commit()
+      print(f"column {column_name} has added.")
+    except sqlite3.Error as e:
+      self.print_e(e)
+      self.conn.rollback()
+      print("data is returned to original state")
+    return self
+
   # ###############################################################################################
   # CREATE (INSERT)
   #   INSERT INTO users (name, age) VALUES (?, ?);
@@ -200,7 +221,7 @@ class SQLite_cmd :
       self.print_e(e)
     return row
   
-  def column(self, columns:list, table_name=None):
+  def table(self, table_name=None, columns:list=None):
     if not self.check_conn() : return None
     table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'    
     try:
@@ -239,11 +260,6 @@ class SQLite_cmd :
   def select(self,query):
     if not self.check_conn() : return None
     self.cursor.execute(query)
-    return self.cursor.fetchall()
-  
-  def table(self,table_name):
-    if not self.check_conn() : return None
-    self.cursor.execute(self.q_read(table_name=table_name))
     return self.cursor.fetchall()
   
   def read_sql_to_df(self, table_name=None, column:list=None):
@@ -314,7 +330,7 @@ class SQLite_cmd :
   #   UPDATE table_name SET column1 = value1, column2 = value2, ... WHERE condition
   # ###############################################################################################
 
-  def update_data(self, table, set_values, condition):
+  def update_data(self, table_name:str, set_values:dict, condition:str):
     """
       Metode untuk melakukan operasi update pada data dalam tabel.
 
@@ -328,7 +344,7 @@ class SQLite_cmd :
     """
     if not self.check_conn() : return None
     set_clause = ", ".join([f"{column} = ?" for column in set_values.keys()])
-    query = f"UPDATE {table} SET {set_clause} WHERE {condition};"
+    query = f"UPDATE {table_name} SET {set_clause} WHERE {condition};"
     try:
       self.cursor.execute(query, list(set_values.values()))
       self.conn.commit()
