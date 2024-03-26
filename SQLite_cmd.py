@@ -56,7 +56,7 @@ class SQLite_cmd :
     if not self.check_conn() : return None
     # Definisikan perintah SQL untuk menghapus kolom
     alter_query = f"""
-    ALTER TABLE "{table_name}"
+    ALTER TABLE {table_name}
     DROP COLUMN "{column_name}"
     """    
     try:
@@ -74,7 +74,7 @@ class SQLite_cmd :
   def create_table(self, table_name:str, columns:list):
     if not self.check_conn() : return None
     columns_def = ', '.join([f'"{col}" TEXT' for col in columns])
-    self.cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({columns_def})')
+    self.cursor.execute(f'CREATE TABLE IF NOT EXISTS {table_name} ({columns_def})')
     return self
   
   def create_table_from_csv(self, table_name, file_csv):
@@ -173,7 +173,7 @@ class SQLite_cmd :
     '''
     if not self.check_conn() : return None
     placeholders = ', '.join(['?' for _ in columns])
-    self.cursor.executemany(f'INSERT INTO "{table_name}" VALUES ({placeholders})', data)
+    self.cursor.executemany(f'INSERT INTO {table_name} VALUES ({placeholders})', data)
     return self
   
   def insert_data(self, table_name:str, data:list):
@@ -206,7 +206,7 @@ class SQLite_cmd :
 
   def select_row(self,column, value, table_name=None):
     if not self.check_conn() : return None
-    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'
+    table_name = f'{table_name}' if table_name else f'{self.__table}'
     
     try:
       # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
@@ -223,7 +223,7 @@ class SQLite_cmd :
   
   def table(self, table_name=None, columns:list=None):
     if not self.check_conn() : return None
-    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'    
+    table_name = f'{table_name}' if table_name else f'{self.__table}'
     try:
       # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
       self.cursor.execute(self.q_read(
@@ -232,7 +232,7 @@ class SQLite_cmd :
                                      )
                           )
       # Ambil satu baris yang dipilih
-      return self.cursor.fetchone()
+      return self.cursor.fetchall()
     except sqlite3.Error as e:
       self.print_e(e)
     return self
@@ -248,7 +248,7 @@ class SQLite_cmd :
       rows
     """
     if not self.check_conn() : return None
-    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'
+    table_name = f'{table_name}' if table_name else f'{self.__table}'
     self.cursor.execute(self.q_read(
                                    table_name=table_name,
                                    limit=n
@@ -264,7 +264,7 @@ class SQLite_cmd :
   
   def read_sql_to_df(self, table_name=None, column:list=None):
     if not self.check_conn() : return None
-    table_name = f'"{table_name}"' if table_name else f'"{self.__table}"'
+    table_name = f'{table_name}' if table_name else f'{self.__table}'
     if column : 
       return pd.read_sql(self.q_read(
                                      table_name=table_name,
@@ -285,7 +285,7 @@ class SQLite_cmd :
            group:str      = None,
            having:str     = None,
            order:str      = None,
-           ascending :str = None,
+           sort:str       = None,
            limit:int      = None,
            offset:int     = None,
            table_name     = None,
@@ -306,24 +306,25 @@ class SQLite_cmd :
       - group:str      = None,
       - having:str     = None,
       - order:str      = None,
-      - ascending :str = None,
+      - sort :str      = None,
       - limit:int      = None,
       - offset:int     = None,
       - table_name     = None,
 
     """
-    tb = '\nFROM '+(f'"{table_name}"\n' if table_name else f'"{self.__table}"')
+    tb = '\nFROM '+(f'{table_name}' if table_name else f'"{self.__table}"')
     co = ', '.join([f'"{c}"' for c in columns]) if columns else "*"
     cn = f'\nWHERE {condition}' if condition else ''
     di = 'DISTINCT ' if distinct else ''
     gr = f'\nGROUP BY "{group}"' if group else ''
     hv = f'\nHAVING {having}' if having else ''
     od = f'\nORDER BY "{order}"' if order else ''
-    ac = f' {ascending}' if ascending else ''
+    ac = f' {sort}' if sort else ''
     li = f'\nLIMIT {limit}' if limit else ''
     of = f' OFFSET {offset}' if offset else ''
     
-    return f'SELECT {di}{co}{tb}{cn}{gr}{hv}{od}{ac}{li}{of};'
+    q = f"SELECT {di}{co}{tb}{cn}{gr}{hv}{od}{ac}{li}{of};"
+    return q
 
   # ###############################################################################################
   # UPDATE (UPDATE)
