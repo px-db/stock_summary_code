@@ -281,7 +281,7 @@ class SQLite_cmd :
   def q_read(self,
            distinct:bool  = False,
            columns:list   = None,
-           condition:str  = None,
+           where:str      = None,
            group:str      = None,
            having:str     = None,
            order:str      = None,
@@ -302,7 +302,7 @@ class SQLite_cmd :
     parameter :
       - distinct:bool  = False,
       - columns:list   = None,
-      - condition:str  = None,
+      - where:str      = None,
       - group:str      = None,
       - having:str     = None,
       - order:str      = None,
@@ -314,7 +314,7 @@ class SQLite_cmd :
     """
     tb = '\nFROM '+(f'{table_name}' if table_name else f'"{self.__table}"')
     co = ', '.join([f'"{c}"' for c in columns]) if columns else "*"
-    cn = f'\nWHERE {condition}' if condition else ''
+    cn = f'\nWHERE {where}' if where else ''
     di = 'DISTINCT ' if distinct else ''
     gr = f'\nGROUP BY "{group}"' if group else ''
     hv = f'\nHAVING {having}' if having else ''
@@ -363,7 +363,7 @@ class SQLite_cmd :
   
   def delete_row(self,table_name:str, condition=None):
     '''
-    sebelum delete apstikan cek data lewat metode
+    sebelum delete pastikan cek data lewat metode
     self.select_row(self,table_name, column, value)
 
     parameter :
@@ -414,11 +414,11 @@ class SQLite_cmd :
   #   ```
   # ###############################################################################################
 
-  def execute_query(self, query, paramters=None):
+  def execute_query(self, query, parameters=None):
     if not self.check_conn() : return None
     try :
-      if paramters :
-        self.cursor.execute(query, paramters)
+      if parameters :
+        self.cursor.execute(query, parameters)
       else :
         self.cursor.execute(query)
       self.conn.commit()
