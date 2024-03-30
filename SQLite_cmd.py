@@ -349,7 +349,7 @@ class SQLite_cmd :
     try:
       self.cursor.execute(query, list(set_values.values()))
       self.conn.commit()
-      print("Data updated successfully!")
+      print(f"Data {set_clause} updated successfully!")
     except sqlite3.Error as e:
       self.print_e(e)
       self.conn.rollback()
