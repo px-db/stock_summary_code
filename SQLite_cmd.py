@@ -125,8 +125,8 @@ class SQLite_cmd :
 
     '''
     alter_query = f"""
-    ALTER TABLE "{table_name}"
-    DROP COLUMN "{column_name} {data_type}"
+    ALTER TABLE {table_name}
+    ADD COLUMN "{column_name}" {data_type};
     """    
     try:
       # Eksekusi perintah SQL
