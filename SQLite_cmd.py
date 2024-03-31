@@ -204,19 +204,19 @@ class SQLite_cmd :
   #   SELECT * FROM table_name
   # ###############################################################################################
 
-  def select_row(self,column, value, table_name=None):
+  def read_row(self,column, value, table_name=None):
     if not self.check_conn() : return None
     table_name = f'{table_name}' if table_name else f'{self.__table}'
-    
+    row = None
     try:
       # Eksekusi perintah SQL untuk memilih satu baris dengan kondisi tertentu
       self.cursor.execute(self.q_read(
                                       table_name= table_name,
-                                      condition = f'"{column}" = {value}'
+                                      where = f'"{column}" = "{value}"'
                                      )
                           )      
       # Ambil satu baris yang dipilih
-      row = self.cursor.fetchone()
+      row = self.cursor.fetchall()
     except sqlite3.Error as e:
       self.print_e(e)
     return row
@@ -237,7 +237,7 @@ class SQLite_cmd :
       self.print_e(e)
     return self
 
-  def select_top(self, n, table_name=None):
+  def read_top(self, n, table_name=None):
     """
     Query n first rows of the table
     parameter :
@@ -257,7 +257,7 @@ class SQLite_cmd :
     rows = self.cursor.fetchall()
     return rows
   
-  def select(self,query):
+  def read(self,query):
     if not self.check_conn() : return None
     self.cursor.execute(query)
     return self.cursor.fetchall()
