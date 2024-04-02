@@ -52,6 +52,20 @@ class SQLite_cmd :
       print("data is returned to original state")
     return self
   
+  def rename_table(self,table_name:str, new_name:str):
+    if not self.check_conn() : return None
+    try:
+      # Eksekusi perintah SQL untuk menghapus tabel
+      self.cursor.execute(f"ALTER TABLE {table_name} RENAME TO {new_name}")
+      self.conn.commit()
+      print(f"Table {table_name} has rename to {new_name}.")
+    except sqlite3.Error as e:
+      self.print_e(e)
+      self.conn.rollback()
+      print("data is returned to original state")
+    return self
+
+
   def delete_column(self, table_name:str, column_name:str):
     if not self.check_conn() : return None
     # Definisikan perintah SQL untuk menghapus kolom
@@ -76,6 +90,7 @@ class SQLite_cmd :
     columns_def = ', '.join([f'"{col}" TEXT' for col in columns])
     self.cursor.execute(f'CREATE TABLE IF NOT EXISTS {table_name} ({columns_def})')
     return self
+  
   
   def create_table_from_csv(self, table_name, file_csv):
     if not self.check_conn() : return None
