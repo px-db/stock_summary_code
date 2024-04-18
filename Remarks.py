@@ -80,11 +80,12 @@ class Remarks_idx :
     return text[position-1:position+length-1]
 
 remarks={
+# Infor Perusahaan
 '1.--':'Tidak ada tindakan korporasi',
 '1.CD':'Cum Dividen',
 '1.CB':'Cum Bonus',
 '1.CR':'Cum HMETD',
-'1.CA':'Kombinasi dari2 atau lebih tindakan aksi korporasi pada masa cum (dividen tunai, dividen saham dan/atau cum bonus)',
+'1.CA':'Kombinasi dari 2 atau lebih tindakan aksi korporasi pada masa cum (dividen tunai, dividen saham dan/atau cum bonus)',
 '1.XD':'Ex Dividen',
 '1.XB':'Ex Bonus',
 '1.XR':'Ex HMETD',
@@ -102,6 +103,7 @@ remarks={
 '5.3':'Saham dicatatkan di Papan Akselerasi dan/atau masuk dalam penghitungan Indeks Papan Akselerasi',
 '5.4':'Saham dicatatkan di Papan Pemantauan Khusus',
 '5.5':'Saham dicatatkan di Papan Ekonomi Baru dan/atau masuk dalam penghitungan Indeks Papan Utama',
+# Info Ideks
 '6.0':'MASUK: - ; BUKAN: Indeks1, Indeks2, Indeks3, Indeks4, Indeks5',
 '6.1':'MASUK: Indeks1 ; BUKAN: Indeks2,Indeks3,Indeks4,Indeks5',
 '6.2':'MASUK: Indeks2 ; BUKAN: Indeks1,Indeks3,Indeks4,Indeks5',
@@ -390,6 +392,7 @@ remarks={
 '14.V':'MASUK: Indeks41,Indeks43,Indeks44,Indeks45 ; BUKAN: Indeks42',
 '14.W':'MASUK: Indeks42,Indeks43,Indeks44,Indeks45 ; BUKAN: Indeks41',
 '14.X':'MASUK: Indeks41,Indeks42,Indeks43,Indeks44,Indeks45 ; BUKAN: -',
+# Info Sector
 '15.A111':'A:Energy; 1:Oil, Gas & Coal; 1:Oil & Gas; 1:Oil & Gas Production & Refinery',
 '15.A112':'A:Energy; 1:Oil, Gas & Coal; 1:Oil & Gas; 2:Oil & Gas Storage & Distribution',
 '15.A121':'A:Energy; 1:Oil, Gas & Coal; 2:Coal; 1:Coal Production',
@@ -520,6 +523,7 @@ remarks={
 '15.Z113':'Z:Listed Investment Product; 1:Investment Trusts; 1:Investment Trusts; 3:Infrastructure Investment Trusts',
 '15.Z211':'Z:Listed Investment Product; 2:Bonds; 1:Bonds; 1:Government Bonds',
 '15.Z212':'Z:Listed Investment Product; 2:Bonds; 1:Bonds; 2:Corporate Bonds',
+# Notasi Khusus
 '19.B':'Adanya Permohonan Pailit, permohonan pembatalan perdamaian, atau dalam kondisi pailit',
 '19.M':'Adanya Permohonan Penundaan Kewajiban Pembayaran Utang (PKPU)',
 '20.E':'Laporan keuangan terakhir menunjukkan ekuitas negatif',
