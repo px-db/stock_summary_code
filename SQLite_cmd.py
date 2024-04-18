@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+import os
 
 class SQLite_cmd :
   '''
@@ -19,6 +20,9 @@ class SQLite_cmd :
   # DDL (Data Definition Language)
   # ###############################################################################################
   def set_conn(self,sqlite_db:str):
+    if not os.path.isfile(sqlite_db) : 
+      print(f"FAIL! Database file {sqlite_db} does not exist.")
+      return False
     try:
       self.conn = sqlite3.connect(sqlite_db)
       self.cursor = self.conn.cursor()
