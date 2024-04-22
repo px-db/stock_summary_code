@@ -79,7 +79,15 @@ class Remarks_idx :
   def mid(self,text:str, position:int, length:int):
     return text[position-1:position+length-1]
   
-  def substr(self, df_column_name, position, length):
+  def substr(self, df_column_name:pd.DataFrame, position:int, length:int)->pd.DataFrame:
+    '''
+    Parameter :
+     - df_column_name : df[column_name]
+     - position       : int
+     - length         : int
+    
+    return : pd.DataFrame
+    '''
     return df_column_name.str[position-1:position+length-1]
 
 
