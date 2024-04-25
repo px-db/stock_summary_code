@@ -89,6 +89,20 @@ class Remarks_idx :
     return : pd.DataFrame
     '''
     return df_column_name.str[position-1:position+length-1]
+  
+  def parse_string(self,input_string, start_pos, length):
+    # Pastikan start_pos dan length adalah bilangan bulat yang valid
+    if not isinstance(start_pos, int) or not isinstance(length, int):
+        raise ValueError("Start position and length must be integers")
+    
+    # Periksa apakah start_pos valid dan tidak melebihi panjang string
+    if start_pos < 0 or start_pos >= len(input_string):
+        raise ValueError("Invalid start position")
+
+    # Ambil substring dari string berdasarkan posisi dan panjang
+    parsed_string = input_string[start_pos:start_pos + length]
+
+    return parsed_string
 
 
 remarks={
